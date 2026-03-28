@@ -37,7 +37,6 @@ model Assessment{
   answers   Boolean[]
   // Calculated after submission:
   score     Int     // 0–15
-  rating Int // 1–5
   severity  String // "normal" | "mild" | "moderate" | "severe"
   createdAt DateTime @default(now())
   // Relations
