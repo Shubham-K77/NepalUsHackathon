@@ -6,30 +6,25 @@ const protectLogin = async (req, res, next) => {
     //Check The Cookie
     const access_token = req.cookies.access_token;
     if (!access_token) {
-      res
-        .status(401)
-        .send({ message: "Must login to continue!", success: false, data: {} });
-      throw new Error("Must login to continue the request!");
-    }
-    //Validity Of Cookie
-    const userData = jwt.verify(access_token, process.env.JWT_SECRET);
-    if (!userData) {
-      res.status(401).send({
-        message: "Token is expired, Invalid Token Provided!",
+      return res.status(401).send({
+        message: "Must login to continue!",
         success: false,
         data: {},
       });
-      throw new Error("Token is expired, Invalid Token Provided!");
     }
+    //Verify Token (throws on invalid/expired)
+    const userData = jwt.verify(access_token, process.env.JWT_SECRET);
     //Set Request Data
     req.user = userData;
     //Send Forward
     next();
   } catch (error) {
-    res
-      .status(500)
-      .send({ message: "Internal Server Error!", success: false, data: {} });
-    console.error("Internal Server Error!", error.message);
+    //jwt.verify throws on invalid/expired token
+    return res.status(401).send({
+      message: "Token is expired or invalid!",
+      success: false,
+      data: {},
+    });
   }
 };
 //Export
