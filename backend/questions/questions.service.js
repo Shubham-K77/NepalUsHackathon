@@ -39,35 +39,32 @@ const assessQuestions = async (req, res, userInputInfo) => {
     });
 
     if (!assessment) {
-      res.status(500).send({
+      return res.status(500).send({
         message: "Unable to create the assessment!",
         success: false,
         data: {},
       });
-      throw new Error("Unable to create the assessment!");
     }
 
-    // Fetch user details (no language field)
-    const user = await prisma.users.findUnique({
+    // Fetch user details
+    const user = await prisma.userModule.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        dob: true,
-        gender: true,
-        district: true,
-        province: true,
-        pinHash: false,
+      omit: {
+        pinHash: true,
+        genderNe: true,
+        districtNe: true,
+        provinceNe: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
     if (!user) {
-      res.status(404).send({
+      return res.status(404).send({
         message: "User wasn't found in the system!",
         success: false,
         data: {},
       });
-      throw new Error("User wasn't found in the system!");
     }
 
     // Generate AI suggestions
@@ -88,12 +85,11 @@ const assessQuestions = async (req, res, userInputInfo) => {
     });
 
     if (!feedback) {
-      res.status(500).send({
+      return res.status(500).send({
         message: "Unable to create the feedback!",
         success: false,
         data: {},
       });
-      throw new Error("Unable to create the feedback!");
     }
 
     return res.status(201).json({

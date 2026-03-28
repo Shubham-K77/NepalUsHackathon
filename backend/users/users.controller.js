@@ -15,12 +15,11 @@ userRouter.post("/signup", async (req, res) => {
       abortEarly: false,
     });
     if (error) {
-      res.status(400).send({
+      return res.status(400).send({
         message: "Must provide valid data!",
         success: false,
-        data: {},
+        data: { errors: error.details },
       });
-      throw new Error("Request Structure Error! DTO Checking Failed!");
     }
     await createUser(req, res, value);
   } catch (error) {
@@ -36,12 +35,11 @@ userRouter.post("/login", async (req, res) => {
       abortEarly: false,
     });
     if (error) {
-      res.status(400).send({
+      return res.status(400).send({
         message: "Must provide valid data!",
         success: false,
-        data: {},
+        data: { errors: error.details },
       });
-      throw new Error("Request Structure Error! DTO Checking Failed!");
     }
     await loginUser(req, res, value);
   } catch (error) {

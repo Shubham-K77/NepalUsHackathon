@@ -66,7 +66,7 @@ export const generateSuggestions = async (user, score, severity) => {
         - return only JSON, no markdown, no backticks, no extra text
 `;
   const response = await groq.chat.completions.create({
-    model: "openai/gpt-oss-120b",
+    model: "llama3-8b-8192",
     messages: [
       {
         role: "user",
@@ -77,8 +77,39 @@ export const generateSuggestions = async (user, score, severity) => {
     temperature: 0.7,
   });
   const raw = response.choices[0].message.content.trim();
-  // Strip backticks if model adds them anyway
-  const clean = raw.replace(/```json|```/g, "").trim();
+
+  // Robust JSON parsing
+  const cleanGroqResponse = (rawText) => {
+    let cleaned = rawText.trim();
+
+    // Remove markdown code blocks
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, "");
+    cleaned = cleaned.replace(/\s*```$/i, "");
+    cleaned = cleaned.trim();
+
+    // Extract JSON object
+    const jsonStart = cleaned.indexOf("{");
+    const jsonEnd = cleaned.lastIndexOf("}");
+
+    if (jsonStart === -1 || jsonEnd === -1) {
+      throw new Error("No valid JSON object found in Groq response");
+    }
+
+    cleaned = cleaned.slice(jsonStart, jsonEnd + 1);
+
+    // Remove control characters
+    cleaned = cleaned.replace(/[\x00-\x1F\x7F]/g, (char) => {
+      if (char === "\n" || char === "\r" || char === "\t") return " ";
+      return "";
+    });
+
+    // Collapse multiple spaces
+    cleaned = cleaned.replace(/\s+/g, " ");
+
+    return cleaned;
+  };
+
+  const clean = cleanGroqResponse(raw);
   const suggestions = JSON.parse(clean);
   return suggestions;
 };
