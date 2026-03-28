@@ -1,0 +1,210 @@
+{
+  "common": {
+    "appName": "Manko Kura",
+    "appTagline": "Lighten the burden on your mind",
+    "next": "Next",
+    "back": "Back",
+    "submit": "Submit",
+    "retry": "Try Again",
+    "yes": "Yes",
+    "no": "No",
+    "loading": "Loading...",
+    "error": "Something went wrong. Please try again.",
+    "language": "नेपाली",
+    "switchLanguage": "Switch Language"
+  },
+  "nav": {
+    "home": "Home",
+    "survey": "Survey",
+    "community": "Community",
+    "resources": "Support"
+  },
+  "landing": {
+    "heroTitle": "Manko Kura",
+    "heroSubtitle": "Your feelings will be heard",
+    "heroDescription": "Taking care of your mental health means loving yourself. You are not alone here — your family, community, and experts are with you.",
+    "takeSurvey": "Take the Survey",
+    "howItWorks": "How It Works",
+    "step1Title": "Tell us about yourself",
+    "step1Desc": "Enter your name, age, and gender",
+    "step2Title": "Answer the questions",
+    "step2Desc": "15 simple questions to help understand your mental state",
+    "step3Title": "View your results",
+    "step3Desc": "Get your health assessment and recommendations",
+    "trustNote": "Your information is completely private and secure",
+    "privacyBadge": "100% Private",
+    "freeBadge": "Free",
+    "nepaliBadge": "In Nepali",
+    "statsTitle": "About Us",
+    "stat1": "15+ Questions",
+    "stat1Desc": "Globally validated GDS-15 screening",
+    "stat2": "2 Languages",
+    "stat2Desc": "Available in Nepali and English",
+    "stat3": "Secure",
+    "stat3Desc": "Your data stays on your phone",
+    "culturalNote": "Respecting Nepali culture and values",
+    "emergencyTitle": "Emergency Help",
+    "emergencyDesc": "If you are in crisis, contact immediately",
+    "emergencyCall": "TPO Nepal: 1660-01-11555"
+  },
+  "personalInfo": {
+    "title": "Personal Information",
+    "subtitle": "Please share some information about yourself. This information is completely confidential.",
+    "name": "Full Name",
+    "namePlaceholder": "Enter your name",
+    "age": "Age",
+    "agePlaceholder": "Your age (in years)",
+    "gender": "Select Gender",
+    "genderPlaceholder": "Select gender",
+    "genderMale": "Male",
+    "genderFemale": "Female",
+    "genderOther": "Other",
+    "continueBtn": "Start Survey",
+    "errors": {
+      "nameRequired": "Name is required",
+      "nameMin": "Name must be at least 2 characters",
+      "ageRequired": "Age is required",
+      "ageMin": "Age must be 18 or older",
+      "ageMax": "Please enter a valid age",
+      "genderRequired": "Please select a gender"
+    }
+  },
+  "survey": {
+    "title": "Mental Health Survey",
+    "subtitle": "Please answer each question honestly",
+    "questionOf": "{current} of {total}",
+    "progressLabel": "Progress",
+    "selectAnswer": "Please select an answer",
+    "nextQuestion": "Next Question",
+    "previousQuestion": "Previous Question",
+    "finishSurvey": "View Results",
+    "answerRequired": "Please answer before proceeding",
+    "questions": {
+      "q1": "Are you basically satisfied with your life?",
+      "q2": "Have you dropped many of your activities and interests?",
+      "q3": "Do you feel that your life is empty?",
+      "q4": "Do you often get bored?",
+      "q5": "Are you in good spirits most of the time?",
+      "q6": "Are you afraid that something bad is going to happen to you?",
+      "q7": "Do you feel happy most of the time?",
+      "q8": "Do you often feel helpless?",
+      "q9": "Do you prefer to stay at home, rather than going out and doing new things?",
+      "q10": "Do you feel you have more problems with memory than most?",
+      "q11": "Do you think it is wonderful to be alive now?",
+      "q12": "Do you feel pretty worthless the way you are now?",
+      "q13": "Do you feel full of energy?",
+      "q14": "Do you feel that your situation is hopeless?",
+      "q15": "Do you think that most people are better off than you are?"
+    }
+  },
+  "results": {
+    "title": "Your Results",
+    "greeting": "Hello, {name}",
+    "score": "Total Score",
+    "outOf": "out of 15",
+    "takenOn": "Date Taken",
+    "interpretation": {
+      "normal": {
+        "label": "Normal",
+        "description": "Your mental health looks good. Regular exercise, time with family, and meditation practice help maintain this state.",
+        "advice": "Maintain your good state and share happiness with your loved ones."
+      },
+      "mild": {
+        "label": "Mild Challenge",
+        "description": "You are experiencing some mental difficulty. This is common — talk to family and spend time on your interests.",
+        "advice": "Talk to someone you trust. Seek expert help if needed."
+      },
+      "moderate": {
+        "label": "Moderate Challenge",
+        "description": "You are experiencing moderate mental difficulty. Please seek expert help — asking for help is courage, not weakness.",
+        "advice": "Consult a mental health professional. You can contact your nearby hospital."
+      },
+      "severe": {
+        "label": "Immediate Help Needed",
+        "description": "You need immediate mental health expert help. Please talk to someone today.",
+        "advice": "Please contact family or an expert immediately. You are not alone."
+      }
+    },
+    "scoreBreakdown": "Score Breakdown",
+    "history": "Previous Results",
+    "noHistory": "No previous results yet",
+    "progressChart": "Progress Over Time",
+    "retake": "Take Survey Again",
+    "seekHelp": "Seek Professional Help",
+    "backHome": "Back to Home",
+    "date": "Date",
+    "scoreLabel": "Score",
+    "emergencyHelp": "Emergency Help",
+    "emergencyNumber": "TPO Nepal: 1660-01-11555"
+  },
+  "community": {
+    "title": "Community",
+    "subtitle": "You are not alone — welcome to our community",
+    "gatherings": "Community Gatherings",
+    "gatheringsDesc": "Nearby gatherings and events",
+    "supportGroups": "Support Groups",
+    "supportGroupsDesc": "Connect with people who share similar experiences",
+    "hotlines": "Helpline Numbers",
+    "hotlinesDesc": "Help available 24/7",
+    "events": {
+      "e1Title": "Weekly Meditation Practice",
+      "e1Desc": "Every Sunday at 6 AM — Local Temple Grounds",
+      "e1Location": "Kathmandu, Pashupatinath Area",
+      "e2Title": "Senior Support Group",
+      "e2Desc": "Every Wednesday at 3 PM — Social Welfare Center",
+      "e2Location": "Lalitpur, Pulchowk",
+      "e3Title": "Family Counseling Workshop",
+      "e3Desc": "First Saturday of month — TPO Nepal",
+      "e3Location": "Kathmandu, Jamal"
+    },
+    "callJoin": "Contact",
+    "learnMore": "Learn More",
+    "hotlineNumbers": {
+      "tpo": "TPO Nepal: 1660-01-11555",
+      "cmcNepal": "CMC Nepal: 01-4102037",
+      "suicidePrevention": "Suicide Prevention: 1166"
+    }
+  },
+  "resources": {
+    "title": "Support Center",
+    "subtitle": "Experts and services near you",
+    "psychiatrists": "Psychiatrists",
+    "psychiatristsDesc": "Experienced psychiatrists who can speak your language",
+    "therapists": "Counselors",
+    "therapistsDesc": "Mental health counselors",
+    "hospitalsTitle": "Hospitals",
+    "hospitalsDesc": "Hospitals with mental health services",
+    "callNow": "Call Now",
+    "getDirections": "Get Directions",
+    "free": "Free",
+    "online": "Online Available",
+    "doctors": {
+      "d1Name": "Dr. Saroj Opchett",
+      "d1Spec": "Psychiatrist",
+      "d1Location": "TUTH, Maharajgunj",
+      "d1Phone": "01-4412303",
+      "d2Name": "Dr. Prakash Shrestha",
+      "d2Spec": "Psychiatrist",
+      "d2Location": "Patan Hospital, Lalitpur",
+      "d2Phone": "01-5522266",
+      "d3Name": "Dr. Ananda Sharma",
+      "d3Spec": "Clinical Psychologist",
+      "d3Location": "TPO Nepal, Jamal",
+      "d3Phone": "01-4431717"
+    },
+    "hospitals": {
+      "h1Name": "Tribhuvan University Teaching Hospital",
+      "h1Location": "Maharajgunj, Kathmandu",
+      "h1Phone": "01-4412303",
+      "h2Name": "Patan Academy of Health Sciences",
+      "h2Location": "Lalitpur",
+      "h2Phone": "01-5522266",
+      "h3Name": "Mental Hospital Lagankhel",
+      "h3Location": "Lagankhel, Lalitpur",
+      "h3Phone": "01-5521333"
+    },
+    "onlineResources": "Online Resources",
+    "onlineDesc": "Counseling services from home",
+    "emergencyNote": "If you are in crisis, call 1166 immediately"
+  }
+}

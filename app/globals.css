@@ -1,0 +1,132 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 42 60% 94%;
+    --foreground: 15 30% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 15 30% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 15 30% 15%;
+    --primary: 0 67% 32%;
+    --primary-foreground: 42 60% 94%;
+    --secondary: 37 63% 48%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 42 40% 88%;
+    --muted-foreground: 15 20% 40%;
+    --accent: 119 22% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 42 35% 82%;
+    --input: 42 35% 82%;
+    --ring: 0 67% 32%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-size: 18px;
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-cream-100 text-darkText font-devanagari;
+    font-size: 20px;
+    line-height: 1.75;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold leading-tight text-darkText;
+    font-weight: 700;
+  }
+
+  h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); }
+  h2 { font-size: clamp(1.5rem, 4vw, 2rem); }
+  h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
+
+  p {
+    font-size: 20px;
+    line-height: 1.75;
+  }
+
+  button, a {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /* Cultural decorative border pattern */
+  .dhaka-border {
+    border-image: repeating-linear-gradient(
+      90deg,
+      #8B1A1A 0px,
+      #8B1A1A 4px,
+      #C8962A 4px,
+      #C8962A 8px,
+      #5B8C5A 8px,
+      #5B8C5A 12px
+    ) 2;
+  }
+
+  .gradient-hero {
+    background: linear-gradient(
+      160deg,
+      #6B1313 0%,
+      #8B1A1A 30%,
+      #A83232 60%,
+      #C8962A 100%
+    );
+  }
+
+  .gradient-card {
+    background: linear-gradient(135deg, #FAF3E0 0%, #F5E9C5 100%);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF3E0;
+}
+::-webkit-scrollbar-thumb {
+  background: #C8962A;
+  border-radius: 3px;
+}
+
+/* Animations */
+@keyframes pulse-gentle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-gentle {
+  animation: pulse-gentle 2s ease-in-out infinite;
+}
