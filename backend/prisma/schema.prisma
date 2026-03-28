@@ -1,0 +1,170 @@
+//Config:
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+}
+//Schema:
+model UserModule {
+  id String @id @default(uuid()) //Primary Key
+  name String
+  dob DateTime // used with name as a unique combined key
+  gender Gender
+  genderNe String? //Optional
+  district District
+  districtNe String?
+  province Province
+  provinceNe String?
+  pinHash    String //used for the direct access
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  //Relations
+  assessments Assessment[]
+  feedbacks   Feedback[]
+  //Unique
+  @@unique([name, dob])
+  //Index
+  @@index([id, name, dob])
+  //Map
+  @@map("users")
+}
+model Assessment{
+  id String @id @default(uuid())
+  userId String
+  user UserModule @relation(fields: [userId], references: [id], onDelete: Cascade )
+  // GDS-15 answers in order Q1–Q15:
+  answers   Boolean[]
+  // Calculated after submission:
+  score     Int     // 0–15
+  rating Int // 1–5
+  severity  String // "normal" | "mild" | "moderate" | "severe"
+  createdAt DateTime @default(now())
+  // Relations
+  feedback  Feedback[]
+  //Index
+  @@index([userId])
+  @@index([createdAt])
+  //Map
+  @@map("assessments")
+}
+model Feedback{
+  id String @id @default(cuid())
+  userId String
+  user UserModule @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessmentId String @unique
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  suggestions Json //Provided From AI
+  comment String? // Optional Free Text
+  //Index
+  @@index([userId])
+  //Map
+  @@map("feedbacks")
+}
+//Enums:
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+enum Province {
+  KOSHI
+  MADHESH
+  BAGMATI
+  GANDAKI
+  LUMBINI
+  KARNALI
+  SUDURPASHCHIM
+}
+enum District {
+  // KOSHI
+  TAPLEJUNG
+  SANKHUWASABHA
+  SOLUKHUMBU
+  OKHALDHUNGA
+  KHOTANG
+  BHOJPUR
+  DHANKUTA
+  TERHATHUM
+  PANCHTHAR
+  ILAM
+  JHAPA
+  MORANG
+  SUNSARI
+  UDAYAPUR
+
+  // MADHESH
+  SAPTARI
+  SIRAHA
+  DHANUSHA
+  MAHOTTARI
+  SARLAHI
+  RAUTAHAT
+  BARA
+  PARSA
+
+  // BAGMATI
+  SINDHULI
+  RAMECHHAP
+  DOLAKHA
+  SINDHUPALCHOK
+  KAVREPALANCHOK
+  LALITPUR
+  BHAKTAPUR
+  KATHMANDU
+  NUWAKOT
+  RASUWA
+  DHADING
+  MAKWANPUR
+  CHITWAN
+
+  // GANDAKI
+  GORKHA
+  MANANG
+  MUSTANG
+  MYAGDI
+  KASKI
+  LAMJUNG
+  TANAHU
+  NAWALPUR
+  SYANGJA
+  PARBAT
+  BAGLUNG
+
+  // LUMBINI
+  RUKUM_EAST
+  ROLPA
+  PYUTHAN
+  GULMI
+  ARGHAKHANCHI
+  PALPA
+  NAWALPARASI_EAST
+  RUPANDEHI
+  KAPILVASTU
+  DANG
+  BANKE
+  BARDIYA
+
+  // KARNALI
+  DOLPA
+  MUGU
+  HUMLA
+  JUMLA
+  KALIKOT
+  DAILEKH
+  JAJARKOT
+  RUKUM_WEST
+  SALYAN
+  SURKHET
+
+  // SUDURPASHCHIM
+  BAJURA
+  BAJHANG
+  ACHHAM
+  DOTI
+  KAILALI
+  KANCHANPUR
+  DADELDHURA
+  BAITADI
+  DARCHULA
+}
