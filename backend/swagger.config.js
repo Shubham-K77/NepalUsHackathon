@@ -186,11 +186,177 @@ const options = {
             },
           },
         },
+        Question: {
+          type: "object",
+          properties: {
+            id: {
+              type: "integer",
+              description: "Question number (1-15)",
+              example: 1,
+            },
+            question: {
+              type: "string",
+              description: "Question text in Nepali",
+              example: "के तपाईं आफ्नो जीवनसँग सन्तुष्ट हुनुहुन्छ?",
+            },
+            options: {
+              type: "object",
+              properties: {
+                yes: {
+                  type: "object",
+                  properties: {
+                    label: { type: "string", example: "हो" },
+                    score: { type: "integer", example: 0 },
+                  },
+                },
+                no: {
+                  type: "object",
+                  properties: {
+                    label: { type: "string", example: "होइन" },
+                    score: { type: "integer", example: 1 },
+                  },
+                },
+              },
+            },
+            depressiveAnswer: {
+              type: "string",
+              enum: ["yes", "no"],
+              description: "The answer indicating depression",
+              example: "no",
+            },
+          },
+        },
+        SubmitAssessmentRequest: {
+          type: "object",
+          required: ["answers"],
+          properties: {
+            answers: {
+              type: "array",
+              minItems: 15,
+              maxItems: 15,
+              description: "Array of 15 question answers (Q1-Q15)",
+              items: {
+                type: "object",
+                required: ["questionId", "answer"],
+                properties: {
+                  questionId: {
+                    type: "integer",
+                    minimum: 1,
+                    maximum: 15,
+                    description: "Question ID (1-15)",
+                    example: 1,
+                  },
+                  answer: {
+                    type: "string",
+                    enum: ["yes", "no"],
+                    description: "User's answer",
+                    example: "yes",
+                  },
+                },
+              },
+            },
+          },
+        },
+        Assessment: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              description: "Assessment ID (UUID)",
+              example: "123e4567-e89b-12d3-a456-426614174000",
+            },
+            userId: {
+              type: "string",
+              description: "Associated user ID",
+              example: "123e4567-e89b-12d3-a456-426614174000",
+            },
+            answers: {
+              type: "array",
+              description: "15 boolean answers (true if depressive answer)",
+              items: { type: "boolean" },
+              example: [
+                true,
+                false,
+                true,
+                false,
+                true,
+                false,
+                true,
+                false,
+                true,
+                false,
+                true,
+                false,
+                true,
+                false,
+                true,
+              ],
+            },
+            score: {
+              type: "integer",
+              minimum: 0,
+              maximum: 15,
+              description: "Total score (0-15)",
+              example: 8,
+            },
+            severity: {
+              type: "string",
+              enum: ["normal", "mild", "moderate", "severe"],
+              description: "Depression severity level",
+              example: "mild",
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              description: "Assessment creation timestamp",
+              example: "2026-03-28T10:30:00Z",
+            },
+          },
+        },
+        Feedback: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              description: "Feedback ID",
+              example: "feedback-uuid",
+            },
+            userId: {
+              type: "string",
+              description: "Associated user ID",
+              example: "123e4567-e89b-12d3-a456-426614174000",
+            },
+            assessmentId: {
+              type: "string",
+              description: "Associated assessment ID",
+              example: "123e4567-e89b-12d3-a456-426614174000",
+            },
+            suggestions: {
+              type: "object",
+              description: "AI-generated suggestions",
+              properties: {
+                message: {
+                  type: "string",
+                  description: "Message in Nepali",
+                },
+                activities: { type: "array" },
+                resources: { type: "array" },
+                helplines: { type: "array" },
+                emergency: { type: "string" },
+              },
+            },
+            comment: {
+              type: "string",
+              description: "Optional user comment",
+              nullable: true,
+            },
+          },
+        },
       },
     },
     security: [],
   },
-  apis: ["./users/users.controller.js"],
+  apis: ["./users/users.controller.js", "./questions/questions.controller.js"],
 };
 
 const specs = swaggerJsdoc(options);
