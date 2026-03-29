@@ -26,6 +26,10 @@ const cleanAndParseGroq = (raw) => {
 
 //POST /api/v1/vapi/setup
 export const createVapiAssistant = async () => {
+  const key = process.env.VAPI_API_KEY;
+  console.log("Using VAPI key:", key);
+  console.log("Key length:", key?.length);
+
   const res = await fetch("https://api.vapi.ai/assistant", {
     method: "POST",
     headers: {
