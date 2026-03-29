@@ -138,11 +138,9 @@ export const GDS15_QUESTIONS = [
     depressiveAnswer: "yes",
   },
 ];
-
 // Function to calculate severity based on score
 export const calculateSeverity = (score) => {
   if (score <= 4) return "normal";
-  if (score <= 8) return "mild";
-  if (score <= 11) return "moderate";
+  if (score <= 9) return "moderate";
   return "severe";
 };

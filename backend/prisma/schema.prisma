@@ -22,6 +22,7 @@ model UserModule {
   //Relations
   assessments Assessment[]
   feedbacks   Feedback[]
+  vapiCalls   VapiCall[]
   //Unique
   @@unique([name, dob])
   //Index
@@ -41,6 +42,7 @@ model Assessment{
   createdAt DateTime @default(now())
   // Relations
   feedback  Feedback[]
+  vapiCall  VapiCall?
   //Index
   @@index([userId])
   @@index([createdAt])
@@ -53,12 +55,32 @@ model Feedback{
   user UserModule @relation(fields: [userId], references: [id], onDelete: Cascade)
   assessmentId String @unique
   assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  suggestions Json //Provided From AI
-  comment String? // Optional Free Text
+  suggestions Json
+  comment String?
   //Index
   @@index([userId])
   //Map
   @@map("feedbacks")
+}
+model VapiCall {
+  id String     @id @default(uuid())
+  userId String
+  user UserModule @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessmentId String @unique
+  assessment Assessment @relation(fields: [assessmentId], references: [id])
+  vapiCallId String @unique
+  phoneNumber String
+  transcript String?
+  summary String?
+  status String @default("initiated")
+  suggestions Json?
+  crisisDetected Boolean @default(false)
+  createdAt DateTime @default(now())
+  //Indexing
+  @@index([userId])
+  @@index([status])
+  //Mapping
+  @@map("vapi_calls")
 }
 //Enums:
 enum Gender {
