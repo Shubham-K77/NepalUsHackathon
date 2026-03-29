@@ -153,6 +153,23 @@ const SUPPORT_LEVELS: Record<1 | 2 | 3, SupportLevel> = {
   },
 };
 
+const EN_TO_NE: Record<string, string> = {
+  "0": "०",
+  "1": "१",
+  "2": "२",
+  "3": "३",
+  "4": "४",
+  "5": "५",
+  "6": "६",
+  "7": "७",
+  "8": "८",
+  "9": "९",
+};
+
+function toNepaliDigits(value: string | number) {
+  return String(value).replace(/[0-9]/g, (digit) => EN_TO_NE[digit] || digit);
+}
+
 function ScoreBar({ score, barColor }: { score: number; barColor: string }) {
   const [width, setWidth] = useState(0);
   const pct = Math.round((score / 15) * 100);
@@ -165,11 +182,11 @@ function ScoreBar({ score, barColor }: { score: number; barColor: string }) {
   return (
     <div className="w-full">
       <div className="flex justify-between mb-2 text-[15px] font-semibold text-[#888888]">
-        <span>0</span>
+        <span>{toNepaliDigits(0)}</span>
         <span className="text-[#111111] text-[18px] font-bold">
-          {score} / 15
+          {toNepaliDigits(score)} / {toNepaliDigits(15)}
         </span>
-        <span>15</span>
+        <span>{toNepaliDigits(15)}</span>
       </div>
       <div className="w-full h-4 bg-[#E0E0E0] rounded-full overflow-hidden">
         <div
