@@ -35,6 +35,7 @@ const createUser = async (req, res, userInfo) => {
       province: userInfo.province,
       provinceNe: provinceNames[userInfo.province].ne,
       pinHash,
+      updatedAt: new Date(),
     },
   });
   if (!newUser) {
