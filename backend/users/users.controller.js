@@ -1,7 +1,13 @@
 //Imports
 import express from "express";
 import { createUserSchema, loginUserSchema } from "./users.dto.js";
-import { createUser, loginUser, fetchCurrentUser } from "./users.service.js";
+import {
+  createUser,
+  loginUser,
+  fetchCurrentUser,
+  logoutUser,
+  checkUserExistsByIdentity,
+} from "./users.service.js";
 import protectLogin from "../guard/protectLogin.guard.js";
 //Config
 const userRouter = express.Router();
@@ -48,6 +54,12 @@ userRouter.post("/login", async (req, res) => {
       .send({ message: "Internal Server Error!", success: false, data: {} });
     console.error("Internal Server Error!", error.message);
   }
+});
+userRouter.post("/exists", async (req, res) => {
+  await checkUserExistsByIdentity(req, res);
+});
+userRouter.post("/logout", async (req, res) => {
+  await logoutUser(req, res);
 });
 //Export
 export default userRouter;

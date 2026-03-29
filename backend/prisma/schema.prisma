@@ -69,6 +69,7 @@ model VapiCall {
   assessmentId String @unique
   assessment Assessment @relation(fields: [assessmentId], references: [id])
   vapiCallId String @unique
+  phoneNumber String
   transcript String?
   summary String?
   status String @default("initiated")

@@ -152,5 +152,60 @@ const fetchCurrentUser = async (req, res) => {
     console.error("Internal Server Error!", error.message);
   }
 };
+const logoutUser = async (req, res) => {
+  res.clearCookie("access_token", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+  });
+
+  return res.status(200).send({
+    message: "Successfully Logged Out!",
+    success: true,
+    data: {},
+  });
+};
+
+const checkUserExistsByIdentity = async (req, res) => {
+  try {
+    const { name, dob } = req.body || {};
+
+    if (!name || !dob) {
+      return res.status(400).send({
+        message: "Name and dob are required",
+        success: false,
+        data: {},
+      });
+    }
+
+    const user = await prisma.userModule.findUnique({
+      where: {
+        name_dob: {
+          name,
+          dob,
+        },
+      },
+      select: { id: true },
+    });
+
+    return res.status(200).send({
+      message: "User existence checked",
+      success: true,
+      data: { exists: Boolean(user) },
+    });
+  } catch (error) {
+    return res.status(500).send({
+      message: "Internal Server Error!",
+      success: false,
+      data: {},
+    });
+  }
+};
 //Exports
-export { createUser, loginUser, fetchCurrentUser };
+export {
+  createUser,
+  loginUser,
+  fetchCurrentUser,
+  logoutUser,
+  checkUserExistsByIdentity,
+};

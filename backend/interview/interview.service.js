@@ -4,6 +4,19 @@ import { buildVapiSystemPrompt } from "./vapi.prompt.js";
 
 const getGroq = () => new Groq({ apiKey: process.env.GROQ_API_KEY });
 
+const extractTranscriptFromMessages = (messages) => {
+  if (!Array.isArray(messages)) return "";
+  return messages
+    .map((msg) => {
+      if (typeof msg === "string") return msg;
+      if (!msg || typeof msg !== "object") return "";
+      return msg.transcript || msg.text || msg.content || msg.message || "";
+    })
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+};
+
 const cleanAndParseGroq = (raw) => {
   let cleaned = raw.trim();
   cleaned = cleaned
@@ -71,10 +84,98 @@ export const createVapiAssistant = async () => {
   return data;
 };
 
+export const getInterviewStartConfig = async (userId, assessmentId) => {
+  const VAPI_ASSISTANT_ID = process.env.VAPI_ASSISTANT_ID;
+  if (!VAPI_ASSISTANT_ID) {
+    throw new Error("VAPI config missing: VAPI_ASSISTANT_ID");
+  }
+
+  const user = await prisma.userModule.findUnique({
+    where: { id: userId },
+    omit: { pinHash: true },
+  });
+  if (!user) throw new Error("User not found");
+
+  const assessment = await prisma.assessment.findUnique({
+    where: { id: assessmentId },
+  });
+  if (!assessment) throw new Error("Assessment not found");
+  if (assessment.userId !== userId) {
+    throw new Error("Assessment does not belong to this user");
+  }
+
+  const systemPrompt = buildVapiSystemPrompt(user, assessment);
+
+  return {
+    assistantId: VAPI_ASSISTANT_ID,
+    assistantOverrides: {
+      maxDurationSeconds: 900,
+      model: {
+        provider: "groq",
+        model: "llama3-70b-8192",
+        messages: [{ role: "system", content: systemPrompt }],
+      },
+      metadata: {
+        userId,
+        assessmentId,
+      },
+    },
+  };
+};
+
+export const linkVapiCallByAssessment = async (
+  userId,
+  assessmentId,
+  vapiCallId,
+) => {
+  const assessment = await prisma.assessment.findUnique({
+    where: { id: assessmentId },
+  });
+  if (!assessment) throw new Error("Assessment not found");
+  if (assessment.userId !== userId) {
+    throw new Error("Assessment does not belong to this user");
+  }
+
+  const existing = await prisma.vapiCall.findUnique({
+    where: { assessmentId },
+    select: { id: true },
+  });
+
+  if (existing) {
+    await prisma.vapiCall.update({
+      where: { assessmentId },
+      data: {
+        vapiCallId,
+        status: "initiated",
+      },
+    });
+  } else {
+    await prisma.vapiCall.create({
+      data: {
+        userId,
+        assessmentId,
+        vapiCallId,
+        phoneNumber: "web",
+        status: "initiated",
+      },
+    });
+  }
+
+  return { linked: true };
+};
+
 //2. Initiate web call
 export const initiateWebCall = async (userId, assessmentId) => {
   const VAPI_API_KEY = process.env.VAPI_API_KEY;
   const VAPI_ASSISTANT_ID = process.env.VAPI_ASSISTANT_ID;
+
+  if (!VAPI_API_KEY) {
+    throw new Error("VAPI config missing: VAPI_API_KEY");
+  }
+  if (!VAPI_ASSISTANT_ID) {
+    throw new Error("VAPI config missing: VAPI_ASSISTANT_ID");
+  }
+
   // Fetch user
   const user = await prisma.userModule.findUnique({
     where: { id: userId },
@@ -117,6 +218,14 @@ export const initiateWebCall = async (userId, assessmentId) => {
       },
     }),
   });
+
+  if (!response.ok) {
+    const failureText = await response.text();
+    throw new Error(
+      `Vapi web call failed with status ${response.status}: ${failureText.slice(0, 300)}`,
+    );
+  }
+
   const data = await response.json();
   if (!data.id)
     throw new Error("Vapi web call failed: " + JSON.stringify(data));
@@ -126,7 +235,7 @@ export const initiateWebCall = async (userId, assessmentId) => {
       userId,
       assessmentId,
       vapiCallId: data.id,
-      phoneNumber: data.phoneNumber ?? "unknown",
+      phoneNumber: data.phoneNumber ?? "web",
       status: "initiated",
     },
   });
@@ -193,6 +302,109 @@ export const handleVapiWebhook = async (body) => {
     },
   });
   console.log("Webhook processed for call:", vapiCallId);
+};
+
+export const completeInterviewFromClient = async (
+  userId,
+  assessmentId,
+  payload,
+) => {
+  const assessment = await prisma.assessment.findUnique({
+    where: { id: assessmentId },
+  });
+  if (!assessment) throw new Error("Assessment not found");
+  if (assessment.userId !== userId) {
+    throw new Error("Assessment does not belong to this user");
+  }
+
+  const existingByAssessment = await prisma.vapiCall.findUnique({
+    where: { assessmentId },
+    select: {
+      id: true,
+      vapiCallId: true,
+      status: true,
+      user: true,
+      assessment: true,
+    },
+  });
+
+  const fallbackCallId =
+    payload?.vapiCallId || existingByAssessment?.vapiCallId || null;
+
+  if (!fallbackCallId) {
+    throw new Error("vapiCallId is required for client completion");
+  }
+
+  if (!existingByAssessment) {
+    await prisma.vapiCall.create({
+      data: {
+        userId,
+        assessmentId,
+        vapiCallId: fallbackCallId,
+        phoneNumber: "web",
+        status: "initiated",
+      },
+    });
+  } else if (existingByAssessment.vapiCallId !== fallbackCallId) {
+    await prisma.vapiCall.update({
+      where: { assessmentId },
+      data: { vapiCallId: fallbackCallId },
+    });
+  }
+
+  const callRecord = await prisma.vapiCall.findUnique({
+    where: { vapiCallId: fallbackCallId },
+    select: {
+      id: true,
+      userId: true,
+      assessmentId: true,
+      vapiCallId: true,
+      user: true,
+      assessment: true,
+      status: true,
+    },
+  });
+
+  if (!callRecord) {
+    throw new Error("Call record not found");
+  }
+
+  if (callRecord.status === "completed") {
+    return { completed: true };
+  }
+
+  const transcriptFromPayload =
+    (payload?.transcript || "").trim() ||
+    extractTranscriptFromMessages(payload?.messages);
+  const summaryFromPayload = (payload?.summary || "").trim();
+
+  let suggestions = null;
+  let crisisDetected = false;
+
+  try {
+    const result = await generateSuggestionsFromCall(
+      callRecord.user,
+      callRecord.assessment,
+      transcriptFromPayload,
+    );
+    suggestions = result.suggestions;
+    crisisDetected = result.crisisDetected;
+  } catch (err) {
+    console.error("Groq failed for client completion:", err.message);
+  }
+
+  await prisma.vapiCall.update({
+    where: { vapiCallId: fallbackCallId },
+    data: {
+      transcript: transcriptFromPayload || null,
+      summary: summaryFromPayload || null,
+      status: "completed",
+      suggestions,
+      crisisDetected,
+    },
+  });
+
+  return { completed: true };
 };
 
 // 4. Groq — generate suggestions after call
