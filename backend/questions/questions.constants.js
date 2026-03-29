@@ -141,6 +141,6 @@ export const GDS15_QUESTIONS = [
 // Function to calculate severity based on score (Triad: 0-4, 5-9, 10-15)
 export const calculateSeverity = (score) => {
   if (score <= 4) return "normal"; // No/minimal depression
-  if (score <= 9) return "mild"; // Mild depression
-  return "moderate"; // Moderate to severe depression
+  if (score <= 9) return "moderate"; // Moderate depression
+  return "severe"; // Severe depression
 };

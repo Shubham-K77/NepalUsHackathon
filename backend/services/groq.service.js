@@ -11,9 +11,9 @@ export const generateSuggestions = async (user, score, severity) => {
   const severityNepali =
     severity === "normal"
       ? "सामान्य"
-      : severity === "mild"
-        ? "हल्का अवसाद"
-        : "मध्यम अवसाद";
+      : severity === "moderate"
+        ? "मध्यम अवसाद"
+        : "गम्भीर अवसाद";
 
   let riskLevel, recommendationType, recommendationGuidelines;
   if (score <= 4) {

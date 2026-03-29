@@ -198,9 +198,9 @@ export const generateSuggestionsFromCall = async (
   const severityNepali =
     assessment?.severity === "normal"
       ? "सामान्य"
-      : assessment?.severity === "mild"
-        ? "हल्का अवसाद"
-        : "मध्यम अवसाद";
+      : assessment?.severity === "moderate"
+        ? "मध्यम अवसाद"
+        : "गम्भीर अवसाद";
 
   const prompt = `
 You are a compassionate mental health assistant for Nepali people.
@@ -241,11 +241,11 @@ Rules:
 - suggest 3 activities appropriate for age ${age}
 - suggest 2 real mental health resources in ${user.district} or nationwide Nepal
 - always include TPO Nepal and Umang in helplines
-- if severity is "mild" oretGroq()oderate" (Tier 2-3), encourage professional help and counseling
+- if severity is "moderate" or "severe" (Tier 2-3), encourage professional help and counseling
 - all text in Nepali except resource names and phone numbers
 `;
-  const response = await groq.chat.completions.create({
-    model: "llama3-8b-8192",
+  const response = await getGroq().chat.completions.create({
+    model: "llama-3.3-70b-versatile",
     messages: [{ role: "user", content: prompt }],
     max_tokens: 1000,
     temperature: 0.7,

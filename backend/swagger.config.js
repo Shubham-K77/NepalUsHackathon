@@ -29,6 +29,14 @@ const options = {
         },
       },
       schemas: {
+        ApiResponse: {
+          type: "object",
+          properties: {
+            message: { type: "string", example: "Successfully Retrieved!" },
+            success: { type: "boolean", example: true },
+            data: { type: "object" },
+          },
+        },
         User: {
           type: "object",
           properties: {
@@ -301,9 +309,9 @@ const options = {
             },
             severity: {
               type: "string",
-              enum: ["normal", "mild", "moderate", "severe"],
+              enum: ["normal", "moderate", "severe"],
               description: "Depression severity level",
-              example: "mild",
+              example: "moderate",
             },
             createdAt: {
               type: "string",
@@ -352,11 +360,338 @@ const options = {
             },
           },
         },
+        InterviewCallRequest: {
+          type: "object",
+          required: ["assessmentId"],
+          properties: {
+            assessmentId: {
+              type: "string",
+              description: "Assessment UUID",
+              example: "123e4567-e89b-12d3-a456-426614174000",
+            },
+          },
+        },
+        InterviewCallStatus: {
+          type: "object",
+          properties: {
+            status: { type: "string", example: "completed" },
+            summary: { type: "string", nullable: true },
+            suggestions: { type: "object", nullable: true },
+            crisisDetected: { type: "boolean", example: false },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              example: "2026-03-29T10:30:00Z",
+            },
+          },
+        },
+      },
+    },
+    paths: {
+      "/api/v1/users/signup": {
+        post: {
+          tags: ["Users"],
+          summary: "Register a new user",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/SignupRequest" },
+              },
+            },
+          },
+          responses: {
+            201: {
+              description: "User registered",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiResponse" },
+                },
+              },
+            },
+            400: { description: "Validation error" },
+            401: { description: "User already exists" },
+          },
+        },
+      },
+      "/api/v1/users/login": {
+        post: {
+          tags: ["Users"],
+          summary: "Login with name, dob and pin",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/LoginRequest" },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Login successful",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiResponse" },
+                },
+              },
+            },
+            400: { description: "Validation error" },
+            401: { description: "Invalid pin" },
+            404: { description: "User not found" },
+          },
+        },
+      },
+      "/api/v1/users/": {
+        get: {
+          tags: ["Users"],
+          summary: "Get current logged-in user",
+          security: [{ cookieAuth: [] }],
+          responses: {
+            200: {
+              description: "User retrieved",
+              content: {
+                "application/json": {
+                  schema: {
+                    allOf: [
+                      { $ref: "#/components/schemas/ApiResponse" },
+                      {
+                        type: "object",
+                        properties: {
+                          data: { $ref: "#/components/schemas/User" },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            401: { description: "Unauthorized" },
+          },
+        },
+      },
+      "/api/v1/questions/": {
+        get: {
+          tags: ["Questions"],
+          summary: "Get all GDS-15 questions",
+          security: [{ cookieAuth: [] }],
+          responses: {
+            200: {
+              description: "Questions retrieved",
+              content: {
+                "application/json": {
+                  schema: {
+                    allOf: [
+                      { $ref: "#/components/schemas/ApiResponse" },
+                      {
+                        type: "object",
+                        properties: {
+                          data: {
+                            type: "array",
+                            items: { $ref: "#/components/schemas/Question" },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            401: { description: "Unauthorized" },
+          },
+        },
+        post: {
+          tags: ["Questions"],
+          summary: "Submit GDS-15 answers and create assessment",
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/SubmitAssessmentRequest",
+                },
+              },
+            },
+          },
+          responses: {
+            201: {
+              description: "Assessment submitted",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiResponse" },
+                },
+              },
+            },
+            400: { description: "Validation error" },
+            401: { description: "Unauthorized" },
+            500: { description: "Server error" },
+          },
+        },
+      },
+      "/api/v1/questions/history": {
+        get: {
+          tags: ["Questions"],
+          summary: "Get assessment history for current user",
+          security: [{ cookieAuth: [] }],
+          responses: {
+            200: {
+              description: "History retrieved",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiResponse" },
+                },
+              },
+            },
+            401: { description: "Unauthorized" },
+          },
+        },
+      },
+      "/api/v1/questions/history/{id}": {
+        get: {
+          tags: ["Questions"],
+          summary: "Get a specific assessment by id",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              description: "Assessment UUID",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Assessment retrieved",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiResponse" },
+                },
+              },
+            },
+            403: { description: "Forbidden" },
+            404: { description: "Not found" },
+          },
+        },
+      },
+      "/api/v1/interviews/setup": {
+        post: {
+          tags: ["Interviews"],
+          summary: "Create VAPI assistant",
+          responses: {
+            201: {
+              description: "Assistant created",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiResponse" },
+                },
+              },
+            },
+            500: { description: "Assistant creation failed" },
+          },
+        },
+      },
+      "/api/v1/interviews/call": {
+        post: {
+          tags: ["Interviews"],
+          summary: "Initiate interview call for an assessment",
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/InterviewCallRequest" },
+              },
+            },
+          },
+          responses: {
+            201: {
+              description: "Call initiated",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiResponse" },
+                },
+              },
+            },
+            400: { description: "Missing assessmentId" },
+            403: { description: "Forbidden" },
+            409: { description: "Duplicate call" },
+            500: { description: "Call initiation failed" },
+          },
+        },
+      },
+      "/api/v1/interviews/webhook": {
+        post: {
+          tags: ["Interviews"],
+          summary: "VAPI webhook callback",
+          requestBody: {
+            required: false,
+            content: {
+              "application/json": {
+                schema: { type: "object", additionalProperties: true },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Webhook accepted",
+              content: {
+                "text/plain": {
+                  schema: { type: "string", example: "ok" },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/v1/interviews/call/{assessmentId}": {
+        get: {
+          tags: ["Interviews"],
+          summary: "Get interview call status by assessment id",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "assessmentId",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              description: "Assessment UUID",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Call status retrieved",
+              content: {
+                "application/json": {
+                  schema: {
+                    allOf: [
+                      { $ref: "#/components/schemas/ApiResponse" },
+                      {
+                        type: "object",
+                        properties: {
+                          data: {
+                            $ref: "#/components/schemas/InterviewCallStatus",
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            403: { description: "Forbidden" },
+            404: { description: "Not found" },
+          },
+        },
       },
     },
     security: [],
   },
-  apis: ["./users/users.controller.js", "./questions/questions.controller.js"],
+  apis: [
+    "./users/users.controller.js",
+    "./questions/questions.controller.js",
+    "./interview/interview.controller.js",
+  ],
 };
 
 const specs = swaggerJsdoc(options);

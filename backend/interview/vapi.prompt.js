@@ -3,13 +3,13 @@ import { GDS15_QUESTIONS } from "../questions/questions.constants.js";
 export const buildVapiSystemPrompt = (user, assessment) => {
   const age = new Date().getFullYear() - new Date(user.dob).getFullYear();
 
-  // व्यावसायिक नेपाली शब्द चयन (Triad: normal, mild, moderate)
+  // व्यावसायिक नेपाली शब्द चयन (Triad: normal, moderate, severe)
   const severityNepali =
     assessment.severity === "normal"
       ? "सामान्य"
-      : assessment.severity === "mild"
-        ? "हल्का अवसाद"
-        : "मध्यम अवसाद";
+      : assessment.severity === "moderate"
+        ? "मध्यम अवसाद"
+        : "गम्भीर अवसाद";
 
   const depressiveQuestions = assessment.answers
     .map((isDepressive, index) => ({
@@ -25,7 +25,7 @@ export const buildVapiSystemPrompt = (user, assessment) => {
   let openingLine = "";
   if (assessment.severity === "normal") {
     openingLine = `"नमस्ते ${user.name} ज्यू! म 'नम्रता' हुँ। तपाईंले भर्नुभएको प्रश्नावलीको नतिजा सकारात्मक देखिएको छ। आज तपाईंको मन कस्तो छ, केही कुरा गरौँ कि?"`;
-  } else if (assessment.severity === "mild") {
+  } else if (assessment.severity === "moderate") {
     openingLine = `"नमस्ते ${user.name} ज्यू! म 'नम्रता' हुँ। तपाईंको उत्तरहरू हेर्दा केही कुराहरूले तपाईंलाई अलि अप्ठ्यारो पारिरहेको जस्तो देखिन्छ। यसबारे मलाई केही भन्न चाहनुहुन्छ?"`;
   } else {
     openingLine = `"नमस्ते ${user.name} ज्यू! म 'नम्रता' हुँ। तपाईंको प्रश्नावलीको नतिजाअनुसार तपाईं अहिले निकै कठिन समयबाट गुज्रिरहनुभएको महसुस भइरहेको छ। म यहाँ तपाईंको कुरा सुन्नको लागि बसेको छु।"`;
