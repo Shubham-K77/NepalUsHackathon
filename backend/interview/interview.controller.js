@@ -19,9 +19,11 @@ interviewRouter.post("/setup", async (req, res) => {
     });
   } catch (error) {
     console.error("Setup error:", error.message);
-    return res
-      .status(500)
-      .send({ message: "Assistant creation failed", success: false, data: {} });
+    return res.status(500).send({
+      message: "Assistant creation failed",
+      success: false,
+      data: { reason: error.message },
+    });
   }
 });
 
@@ -58,9 +60,11 @@ interviewRouter.post("/call", protectLogin, async (req, res) => {
       });
     }
     console.error("Call error:", error.message);
-    return res
-      .status(500)
-      .send({ message: "कल सुरु गर्न सकिएन।", success: false, data: {} });
+    return res.status(500).send({
+      message: "कल सुरु गर्न सकिएन।",
+      success: false,
+      data: { reason: error.message },
+    });
   }
 });
 
@@ -98,13 +102,11 @@ interviewRouter.get("/call/:assessmentId", protectLogin, async (req, res) => {
         .send({ message: "मूल्यांकन फेला परेन।", success: false, data: {} });
     }
     if (assessment.userId !== userId) {
-      return res
-        .status(403)
-        .send({
-          message: "यो कल हेर्ने अनुमति छैन।",
-          success: false,
-          data: {},
-        });
+      return res.status(403).send({
+        message: "यो कल हेर्ने अनुमति छैन।",
+        success: false,
+        data: {},
+      });
     }
 
     const vapiCall = await prisma.vapiCall.findUnique({

@@ -3,9 +3,6 @@ import Groq from "groq-sdk";
 import { buildVapiSystemPrompt } from "./vapi.prompt.js";
 
 const getGroq = () => new Groq({ apiKey: process.env.GROQ_API_KEY });
-const VAPI_API_KEY = process.env.VAPI_API_KEY;
-const VAPI_ASSISTANT_ID = process.env.VAPI_ASSISTANT_ID;
-const WEBHOOK_URL = process.env.WEBHOOK_URL;
 
 const cleanAndParseGroq = (raw) => {
   let cleaned = raw.trim();
@@ -26,9 +23,8 @@ const cleanAndParseGroq = (raw) => {
 
 //POST /api/v1/vapi/setup
 export const createVapiAssistant = async () => {
-  const key = process.env.VAPI_API_KEY;
-  console.log("Using VAPI key:", key);
-  console.log("Key length:", key?.length);
+  const VAPI_API_KEY = process.env.VAPI_API_KEY;
+  const WEBHOOK_URL = process.env.WEBHOOK_URL;
 
   const res = await fetch("https://api.vapi.ai/assistant", {
     method: "POST",
@@ -41,7 +37,7 @@ export const createVapiAssistant = async () => {
       // Google STT — best Nepali support
       transcriber: {
         provider: "google",
-        language: "ne-NP",
+        language: "Multilingual",
       },
       model: {
         provider: "groq",
@@ -77,6 +73,8 @@ export const createVapiAssistant = async () => {
 
 //2. Initiate web call
 export const initiateWebCall = async (userId, assessmentId) => {
+  const VAPI_API_KEY = process.env.VAPI_API_KEY;
+  const VAPI_ASSISTANT_ID = process.env.VAPI_ASSISTANT_ID;
   // Fetch user
   const user = await prisma.userModule.findUnique({
     where: { id: userId },
@@ -94,6 +92,7 @@ export const initiateWebCall = async (userId, assessmentId) => {
   // Prevent duplicate calls
   const existing = await prisma.vapiCall.findUnique({
     where: { assessmentId },
+    select: { id: true },
   });
   if (existing) throw new Error("Call already exists for this assessment");
   // Build dynamic system prompt from GDS-15 answers
@@ -127,6 +126,7 @@ export const initiateWebCall = async (userId, assessmentId) => {
       userId,
       assessmentId,
       vapiCallId: data.id,
+      phoneNumber: data.phoneNumber ?? "unknown",
       status: "initiated",
     },
   });
@@ -151,7 +151,14 @@ export const handleVapiWebhook = async (body) => {
   // Find call record
   const callRecord = await prisma.vapiCall.findUnique({
     where: { vapiCallId },
-    include: { user: true, assessment: true },
+    select: {
+      id: true,
+      userId: true,
+      assessmentId: true,
+      vapiCallId: true,
+      user: true,
+      assessment: true,
+    },
   });
   if (!callRecord) {
     console.error("Webhook: call record not found for", vapiCallId);
@@ -246,7 +253,7 @@ Rules:
 - all text in Nepali except resource names and phone numbers
 `;
   const response = await getGroq().chat.completions.create({
-    model: "llama3-8b-8192",
+    model: "llama-3.3-70b-versatile",
     messages: [{ role: "user", content: prompt }],
     max_tokens: 1000,
     temperature: 0.7,

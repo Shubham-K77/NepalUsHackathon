@@ -2,6 +2,45 @@
 import prisma from "../services/prisma.service.js";
 import { generateSuggestions } from "../services/groq.service.js";
 import { GDS15_QUESTIONS, calculateSeverity } from "./questions.constants.js";
+
+const buildFallbackSuggestions = (severity) => ({
+  message:
+    severity === "normal"
+      ? "तपाईंको उत्तर सामान्य सीमाभित्र देखिएको छ। दैनिक स्वस्थ बानी निरन्तर राख्नुहोस्।"
+      : severity === "mild"
+        ? "तपाईंलाई हल्का मनोवैज्ञानिक दबाब हुन सक्छ। परिवारसँग कुरा गर्नुस् र नियमित आराम लिनुस्।"
+        : "तपाईंलाई थप सहयोग आवश्यक हुन सक्छ। विश्वासिलो व्यक्ति वा परामर्शदातासँग तुरुन्त कुरा गर्नुस्।",
+  activities: [
+    {
+      emoji: "🚶",
+      title: "हल्का हिँडडुल",
+      description: "दिनमा 15-20 मिनेट बाहिर हिँड्नुहोस्।",
+    },
+    {
+      emoji: "🧘",
+      title: "श्वास अभ्यास",
+      description: "५ मिनेट गहिरो सास फेर्ने अभ्यास गर्नुहोस्।",
+    },
+    {
+      emoji: "👨‍👩‍👧",
+      title: "परिवारसँग समय",
+      description: "विश्वासिलो व्यक्तिसँग दैनिक कुरा गर्नुहोस्।",
+    },
+  ],
+  resources: [
+    {
+      name: "TPO Nepal",
+      phone: "1660-01-11116",
+      description: "निःशुल्क मानसिक स्वास्थ्य सहयोग",
+      availableIn: "Nationwide",
+    },
+  ],
+  helplines: [
+    { name: "TPO Nepal", phone: "1660-01-11116" },
+    { name: "Umang", phone: "9840021600" },
+  ],
+  emergency: "TPO Nepal: 1660-01-11116",
+});
 //Functions
 const assessQuestions = async (req, res, userInputInfo) => {
   try {
@@ -57,12 +96,18 @@ const assessQuestions = async (req, res, userInputInfo) => {
         data: {},
       });
     }
-    // Generate AI suggestions
-    const suggestions = await generateSuggestions(
-      user,
-      assessment.score,
-      assessment.severity,
-    );
+    // Generate AI suggestions; use fallback so assessment submission never fails on LLM outages.
+    let suggestions;
+    try {
+      suggestions = await generateSuggestions(
+        user,
+        assessment.score,
+        assessment.severity,
+      );
+    } catch (error) {
+      console.error("Groq suggestion generation failed:", error.message);
+      suggestions = buildFallbackSuggestions(assessment.severity);
+    }
     // Create feedback record with suggestions
     const feedback = await prisma.feedback.create({
       data: {
