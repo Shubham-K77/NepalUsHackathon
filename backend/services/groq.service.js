@@ -2,7 +2,8 @@
 import Groq from "groq-sdk";
 import { districtNames, provinceNames } from "../const.values.js";
 //Config
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+// Lazy initialization - Groq client instantiated only when needed
+const getGroq = () => new Groq({ apiKey: process.env.GROQ_API_KEY });
 //Exports
 export const generateSuggestions = async (user, score, severity) => {
   const districtNepali = districtNames[user.district].ne;
@@ -12,14 +13,12 @@ export const generateSuggestions = async (user, score, severity) => {
       ? "सामान्य"
       : severity === "mild"
         ? "हल्का अवसाद"
-        : severity === "moderate"
-          ? "मध्यम अवसाद"
-          : "गम्भीर अवसाद";
+        : "मध्यम अवसाद";
 
   let riskLevel, recommendationType, recommendationGuidelines;
   if (score <= 4) {
-    // Low-risk
-    riskLevel = "LOW";
+    // Tier 1: Low-risk (0-4)
+    riskLevel = "TIER_1_LOW";
     recommendationType = "Basic Healthy Recommendations";
     recommendationGuidelines = `
     Focus on:
@@ -30,8 +29,8 @@ export const generateSuggestions = async (user, score, severity) => {
     - Simple daily activities that bring joy
     `;
   } else if (score <= 9) {
-    // Moderate-risk
-    riskLevel = "MODERATE";
+    // Tier 2: Moderate-risk (5-9)
+    riskLevel = "TIER_2_MODERATE";
     recommendationType = "Awareness and Community Engagement";
     recommendationGuidelines = `
     Focus on:
@@ -43,9 +42,9 @@ export const generateSuggestions = async (user, score, severity) => {
     - Family involvement and support
     `;
   } else {
-    // Severe
-    riskLevel = "SEVERE";
-    recommendationType = "Professional Support";
+    // Tier 3: High-risk (10-15)
+    riskLevel = "TIER_3_HIGH";
+    recommendationType = "Professional Support Required";
     recommendationGuidelines = `
     Focus on:
     - Immediate professional mental health counseling
@@ -68,7 +67,7 @@ export const generateSuggestions = async (user, score, severity) => {
         - GDS-15 Score: ${score} / 15
         - Severity: ${severityNepali} (${severity})
 
-    CONTEXT: Risk Level is ${riskLevel}. 
+    CONTEXT: Risk Level is ${riskLevel} (GDS-15 Score: ${score}/15). 
     ${recommendationType}: ${recommendationGuidelines}
 
     Based on this information, generate personalized mental health suggestions tailored to the user's risk level.
@@ -105,18 +104,18 @@ export const generateSuggestions = async (user, score, severity) => {
         - message must be in Nepali, warm and specific to their score and risk level
         - suggest 3 activities appropriate for elderly people and aligned with the ${recommendationType}
         ${
-          riskLevel === "LOW"
-            ? "- For LOW risk (0-4): emphasize healthy daily habits, bhajans, meditation, and wellness activities"
-            : riskLevel === "MODERATE"
-              ? "- For MODERATE risk (5-9): emphasize awareness, community engagement, social support groups, and counseling options"
-              : "- For SEVERE risk (10-15): emphasize urgent professional help, therapists, clinical support, and crisis resources"
+          riskLevel === "TIER_1_LOW"
+            ? "- For TIER 1 (0-4): emphasize healthy daily habits, bhajans, meditation, and wellness activities"
+            : riskLevel === "TIER_2_MODERATE"
+              ? "- For TIER 2 (5-9): emphasize awareness, community engagement, social support groups, and counseling options"
+              : "- For TIER 3 (10-15): emphasize urgent professional help, therapists, clinical support, and crisis resources"
         }
         - suggest 2-3 real mental health resources available in ${user.district} district or nationwide in Nepal
         - always include TPO Nepal (1660-01-11116) and Umang helpline in helplines
         - all text fields must be in Nepali except resource names and phone numbers
         - return only JSON, no markdown, no backticks, no extra text
 `;
-  const response = await groq.chat.completions.create({
+  const response = await getGroq().chat.completions.create({
     model: "llama3-8b-8192",
     messages: [
       {
@@ -128,7 +127,6 @@ export const generateSuggestions = async (user, score, severity) => {
     temperature: 0.7,
   });
   const raw = response.choices[0].message.content.trim();
-  // Robust JSON parsing
   const cleanGroqResponse = (rawText) => {
     let cleaned = rawText.trim();
     // Remove markdown code blocks

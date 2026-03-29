@@ -1,14 +1,14 @@
 //Imports
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config(); // Must be first, before any other imports
+
+import express from "express";
 import cors from "cors";
 import cookie from "cookie-parser";
 import swaggerUi from "swagger-ui-express";
 import specs from "./swagger.config.js";
 import { connect } from "./services/prisma.service.js";
 import router from "./routes/index.js";
-//Config
-dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cookie());
